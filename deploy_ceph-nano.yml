@@ -4,9 +4,9 @@ kind: Secret
 metadata:
   name: ceph-rgw-keys
 type: Opaque
-data:
-  rgw_user_user_key: <Base64 encoded key>
-  rgw_user_secret_key: <Base64 encoded key>
+stringData:
+  rgw_user_user_key: <USERKEY-FROM-YAML>
+  rgw_user_secret_key: <SECRETKEY-FROM-YAML>
 ---
 apiVersion: v1
 kind: Service
@@ -49,7 +49,7 @@ spec:
       serviceAccount: anyuid #match with your anyuid
       serviceAccountName: anyuid #match with your anyuid
       containers:
-      - image: registry.access.redhat.com/rhceph/rhceph-3-rhel7
+      - image: registry.redhat.io/rhceph/rhceph-4-rhel8
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -79,7 +79,7 @@ spec:
         - name: DEBUG
           value: "verbose"
         - name: RGW_NAME
-          value: "your-route-host-name" #match with your route host name
+          value: "<YOUR-ROUTE>" #match with your route host name
         - name: CEPH_DEMO_ACCESS_KEY
           valueFrom:
             secretKeyRef:
@@ -103,7 +103,7 @@ spec:
         daemon: nano
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: your-storage-class-name
+      storageClassName: <YOUR-STORAGE-CLASS>
       resources:
         requests:
           storage: 10Gi
@@ -114,7 +114,7 @@ spec:
         daemon: nano
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: your-storage-class-name
+      storageClassName: <YOUR-STORAGE-CLASS>
       resources:
         requests:
           storage: 10Mi
@@ -124,7 +124,7 @@ kind: Route
 metadata:
   name: ceph-nano-s3
 spec:
-  host: "your-route-host-name" #match with your RGW_NAME env variable name
+  host: "<YOUR_ROUTE>" #match with your RGW_NAME env variable name
   to:
     kind: Service
     name: ceph-nano-s3
@@ -134,4 +134,3 @@ spec:
   tls:
     insecureEdgeTerminationPolicy: None
     termination: edge
-

@@ -7,10 +7,16 @@ Original instructions how to run ceph-nano on Kubernetes can be found from [the 
 
 > It's good to be aware `cn kube` generates a broken yaml and it will take while to fix everything (indendations, doubles and so on)
 
-#### 1) Set Anyuid SCC 
-Follow next instructions: https://examples.openshift.pub/deploy/scc-anyuid/ 
+#### 1) Set Anyuid SCC
+Follow next instructions: https://examples.openshift.pub/deploy/scc-anyuid/
 
-#### 2) Don't use default container image - Use: 
+```oc new-project nano```
+
+```oc create sa anyuid -n nano```
+
+```oc adm policy add-scc-to-user -n nano -z anyuid anyuid```
+
+#### 2) Don't use default container image - Use:
 > registry.access.redhat.com/rhceph/rhceph-3-rhel7
 
 #### 3) Change Kubernetes Service type from NodePort to ClusterIP
@@ -24,15 +30,15 @@ Follow next instructions: https://examples.openshift.pub/deploy/scc-anyuid/
 
 #### 6) Apply
 
-```oc apply -f deploy_ceph-nano.yml -n your-ns```
+```oc apply -f deploy_ceph-nano.yml -n nano```
 
 #### 7) Setup your S3-Client - For example s3cmd configuration should look like this:
-```s3cmd --configure``` and change following values:
+```s3cmd --configure -c ~/.s3cfg-nano``` and change following values:
 ```
 
 New settings:
-  Access Key: userkey
-  Secret Key: secretkey
+  Access Key: userkey-from-yaml
+  Secret Key: secretkey-from-yaml
   Default Region: us-east-1
   S3 Endpoint: your.ceph.nano.host.name
   DNS-style bucket+hostname:port template for accessing a bucket: your.ceph.nano.host.name
@@ -42,9 +48,9 @@ New settings:
 #### 8) Test it (example using s3cmd)
 
 ```
-s3cmd mb s3://foobucket
+s3cmd -c ~/.s3cfg-nano mb s3://foobucket
 date > test.txt
-s3cmd put ./test.txt s3://foobucket
-s3cmd ls s3://foobucket
-s3cmd get s3://foobucket/test.txt froms3.txt
+s3cmd -c ~/.s3cfg-nano put ./test.txt s3://foobucket
+s3cmd -c ~/.s3cfg-nano ls s3://foobucket
+s3cmd -c ~/.s3cfg-nano get s3://foobucket/test.txt froms3.txt
 ```
